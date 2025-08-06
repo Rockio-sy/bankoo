@@ -1,0 +1,26 @@
+databaseChangeLog:
+  - changeSet:
+      id: 003-create-transfers
+      author: rockio
+      changes:
+        - createTable:
+            tableName: transfers
+            columns:
+              - column:
+                  name: id
+                  type: UUID
+                  defaultValueComputed: gen_random_uuid()
+                  constraints:
+                    primaryKey: true
+              - column:
+                  name: source_card_id
+                  type: UUID
+              - column:
+                  name: target_card_id
+                  type: UUID
+              - column:
+                  name: amount
+                  type: DECIMAL(12,2)
+              - column:
+                  name: created_at
+                  type: TIMESTAMP

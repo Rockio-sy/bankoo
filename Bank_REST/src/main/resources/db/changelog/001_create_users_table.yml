@@ -1,0 +1,46 @@
+databaseChangeLog:
+  # ─── 000: Enable pgcrypto for UUID generation ───
+  - changeSet:
+      id: 000-enable-pgcrypto
+      author: rockio
+      preconditions:
+        onFail: MARK_RAN
+      changes:
+        - sql:
+            sql: CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+
+  # ─── 001: Create users table with DB-generated UUID ───
+  - changeSet:
+      id: 001-create-users
+      author: rockio
+      changes:
+        - createTable:
+            tableName: users
+            columns:
+              - column:
+                  name: id
+                  type: UUID
+                  defaultValueComputed: gen_random_uuid()
+                  constraints:
+                    primaryKey: true
+              - column:
+                  name: username
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+                    unique: true
+              - column:
+                  name: password
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: full_name
+                  type: VARCHAR(255)
+              - column:
+                  name: role
+                  type: VARCHAR(50)
+              - column:
+                  name: created_at
+                  type: TIMESTAMP
+                  defaultValueComputed: CURRENT_TIMESTAMP
