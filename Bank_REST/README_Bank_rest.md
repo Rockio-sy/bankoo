@@ -15,7 +15,17 @@ cd Bank_REST
 ### 2. Переменные окружения
 
 Создайте файл `.env.prod` в корне проекта:
+```bash
+cat > .env.prod <<EOF
+DB_URL=jdbc:postgresql://postgres:5432/card_db
+DB_USER=rockio
+DB_PASSWORD=tatooo22
+JWT_SECRET=your_jwt_secret_key
+ENCRYPTION_KEY=SecEreTAESKeYToGenerAte256BitOnl
+ENCRYPTION_IV=InItViCT0R128Bit
+EOF
 
+```
 ```env
 DB_URL=jdbc:postgresql://postgres:5432/card_db
 DB_USER=rockio
