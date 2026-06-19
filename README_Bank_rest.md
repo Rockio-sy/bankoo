@@ -1,148 +1,113 @@
-````markdown
-# Система управления банковскими картами
+# Bank Card Management API
 
-Безопасное приложение на Spring Boot для управления банковскими картами для пользователей и администраторов.
+A Spring Boot REST API for managing bank cards, users, authentication, balances, and transfers.
 
----
-## Быстрый старт
+## Features
 
-### 1. Клонирование и настройка
+- JWT-based authentication and registration
+- User card listing with filtering by status
+- Card details with masked or raw card number views for the owner
+- Card block requests from users
+- Money transfers between a user's own cards
+- Balance lookup
+- Admin card management: create, list, update status, delete
+- Admin user management: list, search, view, create, delete
+- AES-based card number encryption
+- Global API error handling
+- Swagger / OpenAPI documentation
+
+## Tech Stack
+
+- Java 21
+- Spring Boot 3.5.4
+- Spring Security with JWT
+- Spring Data JPA
+- PostgreSQL
+- Liquibase
+- SpringDoc OpenAPI
+- Docker and Docker Compose
+- JUnit and Mockito
+
+## Quick Start
+
+### 1. Clone the repository
+
 ```bash
 git clone git@github.com:Rockio-sy/bankoo.git
 cd bankoo/Bank_REST
-````
-
-### 2. Переменные окружения
-
-Создайте файл `.env.prod` в корне проекта:
-```bash
-cat > .env.prod <<EOF
-DB_URL=jdbc:postgresql://postgres:5432/card_db
-DB_USER=rockio
-DB_PASSWORD=tatooo22
-JWT_SECRET=$(openssl rand -base64 48)
-ENCRYPTION_KEY=SecEreTAESKeYToGenerAte256BitOnl
-ENCRYPTION_IV=InItViCT0R128Bit
-EOF
-
 ```
 
+### 2. Configure environment variables
 
-### 3. Запуск через Docker
+Copy the example file and set your own values:
+
+```bash
+cp .env.example .env.prod
+```
+
+Required variables:
+
+- `DB_URL`
+- `DB_USER`
+- `DB_PASSWORD`
+- `JWT_SECRET`
+- `ENCRYPTION_KEY`
+- `ENCRYPTION_IV`
+
+### 3. Run with Docker
 
 ```bash
 docker-compose --env-file .env.prod up --build
 ```
 
-* Приложение будет доступно по адресу: [http://localhost:8083](http://localhost:8083)
+The application runs at `http://localhost:8083`.
 
+## Authentication
 
----
+Register and log in through:
 
-## Технологии
+- `POST /api/v1/auth/register`
+- `POST /api/v1/auth/login`
 
-* **Java 24**
-* **Spring Boot 3.5.4**
-* **Spring Security + JWT**
-* **Spring Data JPA**
-* **PostgreSQL + Liquibase**
-* **SpringDoc OpenAPI (Swagger)**
-* **AES-256 Шифрование**
-* **Docker + Docker Compose**
-* **JUnit + Mockito для тестирования**
+Send the JWT in the `Authorization` header:
 
----
-
-## Возможности
-
-### Возможности пользователя
-
-* Просмотр своих карт (маскированный и полный номер)
-* Фильтрация карт по статусу
-* Запрос на блокировку карты
-* Переводы между своими картами
-* Проверка баланса
-
-### Возможности администратора
-
-* Создание, удаление, активация, блокировка любой карты
-* Просмотр всех карт (с маскировкой номера)
-* Управление пользователями (список, детали, удаление)
-* Поиск пользователей по имени с пагинацией
-
-### Безопасность
-
-* Ролевой доступ (USER / ADMIN)
-* AES шифрование номеров карт
-* Маскирование номеров карт
-* Глобальная обработка исключений
-* Аутентификация на основе JWT
-
----
-
-## Аутентификация
-
-Используйте `/api/v1/auth/register` и `/api/v1/auth/login` для получения JWT токена.
-
-Передавайте токен в заголовке:
-
-```
+```text
 Authorization: Bearer <your_token_here>
 ```
 
----
+## API Overview
 
-## Swagger Документация
+### User endpoints
 
-* UI: [http://localhost:8083/swagger-ui/index.html](http://localhost:8083/swagger-ui/index.html)
-* YAML: `docs/openapi.yaml`
+- `GET /api/v1/cards/all`
+- `GET /api/v1/cards/{cardId}`
+- `GET /api/v1/cards/raw/{cardId}`
+- `POST /api/v1/cards/block-request/{cardId}`
+- `POST /api/v1/cards/transfers`
+- `GET /api/v1/cards/{cardId}/balance`
 
----
+### Admin endpoints
 
-## Миграции Liquibase
+- `POST /api/v1/admin/cards/new`
+- `PATCH /api/v1/admin/cards/{cardId}/status`
+- `DELETE /api/v1/admin/cards/{cardId}/delete`
+- `GET /api/v1/admin/cards/all`
+- `GET /api/v1/admin/cards/all/{userId}`
+- `GET /api/v1/admin/users/all`
+- `GET /api/v1/admin/users/{userId}`
+- `POST /api/v1/admin/users/create`
+- `DELETE /api/v1/admin/users/{userId}`
 
-Миграции находятся в папке:
+## Documentation
 
-```
-src/main/resources/db/changelog/
-```
+- Swagger UI: `http://localhost:8083/swagger-ui/index.html`
+- OpenAPI YAML: `docs/openapi.yaml`
 
-Автоматически применяются при старте приложения. Используется PostgreSQL 16 (Docker).
+## Database
 
----
+Liquibase migrations live in `src/main/resources/db/changelog/` and run automatically at startup.
 
-## Сводка API эндпоинтов
+## Notes
 
-### Эндпоинты пользователя
-
-| Метод | Эндпоинт                               |
-| ----- | -------------------------------------- |
-| GET   | `/api/v1/cards/all`                    |
-| GET   | `/api/v1/cards/{cardId}`               |
-| GET   | `/api/v1/cards/raw/{cardId}`           |
-| POST  | `/api/v1/cards/block-request/{cardId}` |
-| POST  | `/api/v1/cards/transfers`              |
-| GET   | `/api/v1/cards/{cardId}/balance`       |
-
-### Эндпоинты администратора
-
-| Метод  | Эндпоинт                              |
-| ------ | ------------------------------------- |
-| POST   | `/api/v1/admin/cards/new`             |
-| PATCH  | `/api/v1/admin/cards/{cardId}/status` |
-| DELETE | `/api/v1/admin/cards/{cardId}/delete` |
-| GET    | `/api/v1/admin/cards/all`             |
-| GET    | `/api/v1/admin/cards/all/{userId}`    |
-| GET    | `/api/v1/admin/users/all`             |
-| GET    | `/api/v1/admin/users/{userId}`        |
-| DELETE | `/api/v1/admin/users/{userId}`        |
-
----
-
-## Автор
-
-**Разработчик:** Rockio
-
-**Контакты:** [Email](mailto:tarekshawesh23@gmail.com) [Telegram](https://t.me/rockio23)
-
----
+- The repository seeds a development admin account on startup. Change or disable that behavior for production use.
+- Card numbers are stored encrypted, and API responses use masking where appropriate.
