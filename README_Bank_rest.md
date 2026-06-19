@@ -52,7 +52,6 @@ Required variables:
 - `DB_PASSWORD`
 - `JWT_SECRET`
 - `ENCRYPTION_KEY`
-- `ENCRYPTION_IV`
 
 ### 3. Run with Docker
 
