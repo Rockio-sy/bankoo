@@ -32,6 +32,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.HexFormat;
 import java.util.Random;
 import java.util.UUID;
 
@@ -407,11 +408,7 @@ public class CardServiceImpl implements CardService {
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
             byte[] hash = digest.digest(value.getBytes(java.nio.charset.StandardCharsets.UTF_8));
-            StringBuilder builder = new StringBuilder(hash.length * 2);
-            for (byte b : hash) {
-                builder.append(String.format("%02x", b));
-            }
-            return builder.toString();
+            return HexFormat.of().formatHex(hash);
         } catch (NoSuchAlgorithmException e) {
             throw new InternalServerException("Failed to fingerprint card number", e);
         }
