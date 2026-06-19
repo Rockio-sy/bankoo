@@ -5,7 +5,9 @@ import com.example.bankcards.dto.UserDTO;
 import com.example.bankcards.dto.UserPageDTO;
 import com.example.bankcards.entity.Role;
 import com.example.bankcards.entity.User;
+import com.example.bankcards.exception.ForbiddenRequestException;
 import com.example.bankcards.exception.NotFoundException;
+import com.example.bankcards.repository.CardRepository;
 import com.example.bankcards.repository.UserRepository;
 import com.example.bankcards.service.impl.UserServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
@@ -26,6 +28,8 @@ class UserServiceTest {
 
     @Mock
     UserRepository userRepository;
+    @Mock
+    CardRepository cardRepository;
 
     @InjectMocks
     UserServiceImpl userService;
@@ -95,10 +99,21 @@ class UserServiceTest {
     @DisplayName("Should delete user when exists")
     void testDeleteUser_Success() {
         when(userRepository.existsById(userId)).thenReturn(true);
+        when(cardRepository.existsByUserId(userId)).thenReturn(false);
         doNothing().when(userRepository).deleteById(userId);
 
         assertDoesNotThrow(() -> userService.deleteUser(userId.toString()));
         verify(userRepository).deleteById(userId);
+    }
+
+    @Test
+    @DisplayName("Should refuse deleting users that still own cards")
+    void testDeleteUser_WithCards() {
+        when(userRepository.existsById(userId)).thenReturn(true);
+        when(cardRepository.existsByUserId(userId)).thenReturn(true);
+
+        assertThrows(ForbiddenRequestException.class, () -> userService.deleteUser(userId.toString()));
+        verify(userRepository, never()).deleteById(any());
     }
 
     @Test
