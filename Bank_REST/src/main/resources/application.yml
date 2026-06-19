@@ -5,7 +5,7 @@ spring:
     url: ${DB_URL}
     username: ${DB_USER}
     password: ${DB_PASSWORD}
-    drive-class-name: org.postgresql.Driver
+    driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
       ddl-auto: none
@@ -34,4 +34,3 @@ logging:
 
 encryption:
   key: ${ENCRYPTION_KEY}
-  iv: ${ENCRYPTION_IV}

@@ -25,7 +25,6 @@ services:
       DB_SCHEMA: public
       JWT_SECRET: ${JWT_SECRET}
       ENCRYPTION_KEY: ${ENCRYPTION_KEY}
-      ENCRYPTION_IV: ${ENCRYPTION_IV}
     env_file:
       - .env.prod
 
