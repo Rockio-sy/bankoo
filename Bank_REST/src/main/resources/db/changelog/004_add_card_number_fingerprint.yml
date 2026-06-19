@@ -1,0 +1,14 @@
+databaseChangeLog:
+  - changeSet:
+      id: 004-add-card-number-fingerprint
+      author: rockio
+      changes:
+        - addColumn:
+            tableName: cards
+            columns:
+              - column:
+                  name: card_number_fingerprint
+                  type: VARCHAR(64)
+                  constraints:
+                    nullable: false
+                    unique: true

@@ -43,6 +43,9 @@ public class Card {
     @Column(name = "card_number", nullable = false, columnDefinition = "TEXT")
     private String cardNumber;
 
+    @Column(name = "card_number_fingerprint", nullable = false, unique = true, length = 64)
+    private String cardNumberFingerprint;
+
     @Column(name = "expiration_date")
     private LocalDate expirationDate;
 

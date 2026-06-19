@@ -30,6 +30,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.HexFormat;
 import java.util.Random;
 import java.util.UUID;
 
@@ -260,11 +263,11 @@ public class CardServiceImpl implements CardService {
         User user = userRepository.findById(userId).orElseThrow(
                 () -> new NotFoundException("User not found with ID: " + stringUserId));
 
-        String rawNumber = generateCardNumber();
-        String encryptionNumber = encryptionUtil.encrypt(rawNumber);
+        GeneratedCardPayload payload = generateCardPayload();
 
         Card card = Card.builder()
-                .cardNumber(encryptionNumber)
+                .cardNumber(payload.encryptedNumber())
+                .cardNumberFingerprint(payload.fingerprint())
                 .cardStatus(CardStatus.ACTIVE)
                 .user(user)
                 .expirationDate(LocalDate.now().plusYears(3))
@@ -389,16 +392,29 @@ public class CardServiceImpl implements CardService {
         return builder.toString();
     }
 
-    private String generateCardNumber() {
+    private GeneratedCardPayload generateCardPayload() {
         int maxAttempts = 5;
         for (int i = 0; i < maxAttempts; i++) {
             String raw = generateLuhnCardNumber();
-            String encrypted = encryptionUtil.encrypt(raw);
-            if (!cardRepository.existsByCardNumber(encrypted)) {
-                return raw;
+            String fingerprint = fingerprint(raw);
+            if (!cardRepository.existsByCardNumberFingerprint(fingerprint)) {
+                return new GeneratedCardPayload(encryptionUtil.encrypt(raw), fingerprint);
             }
         }
         throw new InternalServerException("Failed to generate unique card number after retries");
+    }
+
+    private String fingerprint(String value) {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] hash = digest.digest(value.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+            return HexFormat.of().formatHex(hash);
+        } catch (NoSuchAlgorithmException e) {
+            throw new InternalServerException("Failed to fingerprint card number", e);
+        }
+    }
+
+    private record GeneratedCardPayload(String encryptedNumber, String fingerprint) {
     }
 
 

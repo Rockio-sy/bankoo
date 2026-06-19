@@ -5,3 +5,5 @@ databaseChangeLog:
       file: db/changelog/002_create_cards_table.yml
   - include:
       file: db/changelog/003_create_transfers_table.yml
+  - include:
+      file: db/changelog/004_add_card_number_fingerprint.yml

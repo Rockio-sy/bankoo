@@ -8,6 +8,7 @@ import com.example.bankcards.entity.*;
 import com.example.bankcards.exception.ForbiddenRequestException;
 import com.example.bankcards.exception.NotFoundException;
 import com.example.bankcards.repository.CardRepository;
+import com.example.bankcards.repository.TransferRepository;
 import com.example.bankcards.repository.UserRepository;
 import com.example.bankcards.service.impl.CardServiceImpl;
 import com.example.bankcards.util.EncryptionUtil;
@@ -33,6 +34,7 @@ class CardServiceTest {
     @Mock
     EncryptionUtil encryptionUtil;
     @Mock UserRepository userRepository;
+    @Mock TransferRepository transferRepository;
 
     @InjectMocks
     CardServiceImpl cardService;
@@ -140,6 +142,7 @@ class CardServiceTest {
         when(encryptionUtil.decrypt("encTo")).thenReturn("5555666677778888");
 
         when(cardRepository.save(any(Card.class))).thenAnswer(i -> i.getArgument(0));
+        when(transferRepository.save(any(Transfer.class))).thenAnswer(i -> i.getArgument(0));
 
         TransferResponseDTO result = cardService.transfer(dto);
 
@@ -368,7 +371,7 @@ class CardServiceTest {
 
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
         when(encryptionUtil.encrypt(anyString())).thenReturn("encryptedNum");
-        when(cardRepository.existsByCardNumber(anyString())).thenReturn(false);
+        when(cardRepository.existsByCardNumberFingerprint(anyString())).thenReturn(false);
         when(cardRepository.save(any(Card.class))).thenAnswer(i -> {
             Card card = i.getArgument(0);
             card.setId(UUID.randomUUID());

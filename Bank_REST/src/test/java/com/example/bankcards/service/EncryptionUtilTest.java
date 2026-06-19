@@ -14,7 +14,6 @@ class EncryptionUtilTest {
 
 
     private final String key = "1234567890123456";
-    private final String iv = "abcdefghijklmnop";
 
     @BeforeEach
     void setUp() {
@@ -22,8 +21,6 @@ class EncryptionUtilTest {
 
 
         setField(encryptionService, "secretKey", key);
-        setField(encryptionService, "initVector", iv);
-
 
         encryptionService.init();
     }
@@ -39,6 +36,19 @@ class EncryptionUtilTest {
 
         String decrypted = encryptionService.decrypt(encrypted);
         assertEquals(plain, decrypted);
+    }
+
+    @Test
+    @DisplayName("Should produce different ciphertexts for the same plaintext")
+    void testEncryptProducesDifferentCiphertextEachTime() {
+        String plain = "SensitiveData123!";
+
+        String encrypted1 = encryptionService.encrypt(plain);
+        String encrypted2 = encryptionService.encrypt(plain);
+
+        assertNotEquals(encrypted1, encrypted2);
+        assertEquals(plain, encryptionService.decrypt(encrypted1));
+        assertEquals(plain, encryptionService.decrypt(encrypted2));
     }
 
     @Test

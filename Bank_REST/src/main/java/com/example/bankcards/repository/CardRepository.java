@@ -16,5 +16,5 @@ public interface CardRepository extends JpaRepository<Card, UUID> {
 
     Page<Card> findByCardStatus(CardStatus status, Pageable pageable);
 
-    boolean existsByCardNumber(String encrypted);
+    boolean existsByCardNumberFingerprint(String cardNumberFingerprint);
 }
