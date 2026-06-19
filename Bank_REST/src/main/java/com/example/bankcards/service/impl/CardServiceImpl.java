@@ -174,12 +174,17 @@ public class CardServiceImpl implements CardService {
 
     @Override
     public String checkBalance(@NonNull String stringCardId) {
+        UUID currentUserId = getUserIdFromSecurityContext();
         UUID cardId = UUID.fromString(stringCardId);
 
         Card saved = cardRepository.findById(cardId).orElseThrow
                 (() -> new NotFoundException("Card not found with ID: " + stringCardId));
 
-        return saved.getBalance().toString();
+        if (!saved.getUser().getId().equals(currentUserId)) {
+            throw new ForbiddenRequestException("Current user doesn't own chosen card");
+        }
+
+        return saved.getBalance().toPlainString();
     }
 
 
