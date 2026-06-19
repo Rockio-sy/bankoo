@@ -5,7 +5,9 @@ import com.example.bankcards.dto.UserDTO;
 import com.example.bankcards.dto.UserPageDTO;
 import com.example.bankcards.entity.Role;
 import com.example.bankcards.entity.User;
+import com.example.bankcards.exception.ForbiddenRequestException;
 import com.example.bankcards.exception.NotFoundException;
+import com.example.bankcards.repository.CardRepository;
 import com.example.bankcards.repository.UserRepository;
 import com.example.bankcards.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +26,7 @@ import java.util.UUID;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
+    private final CardRepository cardRepository;
     private final PasswordEncoder passwordEncoder;
 
     @Override
@@ -59,11 +62,18 @@ public class UserServiceImpl implements UserService {
         if (!userRepository.existsById(id)) {
             throw new NotFoundException("User not found with ID: " + userId);
         }
+        if (cardRepository.existsByUserId(id)) {
+            throw new ForbiddenRequestException("User has cards assigned and cannot be deleted");
+        }
         userRepository.deleteById(id);
     }
 
     @Override
     public UserDTO createUserByAdmin(UserCreationRequestDTO dto) {
+        if (userRepository.existsByUsername(dto.username())) {
+            throw new IllegalArgumentException("Username already exists");
+        }
+
         User user = User.builder()
                 .username(dto.username())
                 .fullName(dto.fullName())
