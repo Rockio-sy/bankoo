@@ -12,6 +12,7 @@ import java.util.UUID;
 public interface CardRepository extends JpaRepository<Card, UUID> {
     Page<Card> findByUserId(UUID userId, Pageable pageable);
     Page<Card> findByUserIdAndCardStatus(UUID userId, CardStatus cardStatus, Pageable pageable);
+    boolean existsByUserId(UUID userId);
 
     Page<Card> findByCardStatus(CardStatus status, Pageable pageable);
 

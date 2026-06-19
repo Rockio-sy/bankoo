@@ -8,11 +8,13 @@ import com.example.bankcards.entity.Card;
 import com.example.bankcards.entity.CardStatus;
 import com.example.bankcards.entity.User;
 import com.example.bankcards.entity.UserDetailsImpl;
+import com.example.bankcards.entity.Transfer;
 import com.example.bankcards.exception.ForbiddenRequestException;
 import com.example.bankcards.exception.InternalServerException;
 import com.example.bankcards.exception.NotFoundException;
 import com.example.bankcards.repository.CardRepository;
 import com.example.bankcards.repository.UserRepository;
+import com.example.bankcards.repository.TransferRepository;
 import com.example.bankcards.service.CardService;
 import com.example.bankcards.util.EncryptionUtil;
 import lombok.NonNull;
@@ -40,6 +42,7 @@ public class CardServiceImpl implements CardService {
     private final CardRepository cardRepository;
     private final EncryptionUtil encryptionUtil;
     private final UserRepository userRepository;
+    private final TransferRepository transferRepository;
 
     @Override
     @Transactional(readOnly = true)
@@ -165,6 +168,12 @@ public class CardServiceImpl implements CardService {
         cardRepository.save(fromCard);
         cardRepository.save(toCard);
 
+        transferRepository.save(Transfer.builder()
+                .sourceCardId(fromCardId)
+                .targetCardId(toCardId)
+                .amount(dto.amount())
+                .build());
+
         // Masked card numbers
         String fromMasked = mask(encryptionUtil.decrypt(fromCard.getCardNumber()));
         String toMasked = mask(encryptionUtil.decrypt(toCard.getCardNumber()));
@@ -174,12 +183,17 @@ public class CardServiceImpl implements CardService {
 
     @Override
     public String checkBalance(@NonNull String stringCardId) {
+        UUID currentUserId = getUserIdFromSecurityContext();
         UUID cardId = UUID.fromString(stringCardId);
 
         Card saved = cardRepository.findById(cardId).orElseThrow
                 (() -> new NotFoundException("Card not found with ID: " + stringCardId));
 
-        return saved.getBalance().toString();
+        if (!saved.getUser().getId().equals(currentUserId)) {
+            throw new ForbiddenRequestException("Current user doesn't own chosen card");
+        }
+
+        return saved.getBalance().toPlainString();
     }
 
 
